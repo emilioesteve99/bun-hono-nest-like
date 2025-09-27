@@ -7,6 +7,7 @@ import { requestUser } from '../../../../common/infrastructure/http/decorator/re
 import { route } from '../../../../common/infrastructure/http/decorator/route';
 import { useInterceptor } from '../../../../common/infrastructure/http/decorator/useInterceptor';
 import { AuthInterceptor } from '../../../../common/infrastructure/http/interceptor/AuthInterceptor';
+import { HttpMethod } from '../../../../common/infrastructure/http/model/HttpMethod';
 import type { UserJwt } from '../../../../common/infrastructure/http/model/UserJwt';
 import { validateQueryParams } from '../../../../common/infrastructure/http/validator/decorator/validateQueryParams';
 import { uuidsPipe } from '../../../../common/infrastructure/http/validator/pipe/uuidsPipe';
@@ -25,7 +26,7 @@ type FindUserQueryParams = {
 export class FindUserController {
   public constructor(private readonly queryBus: QueryBus) {}
   @route({
-    method: 'GET',
+    method: HttpMethod.GET,
     path: '/users',
     version: 'v1',
   })

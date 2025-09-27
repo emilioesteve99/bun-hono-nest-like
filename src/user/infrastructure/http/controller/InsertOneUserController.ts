@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { CommandBus } from '../../../../common/application/cqrs/bus/CommandBus';
 import { route } from '../../../../common/infrastructure/http/decorator/route';
+import { HttpMethod } from '../../../../common/infrastructure/http/model/HttpMethod';
 import { validateBody } from '../../../../common/infrastructure/http/validator/decorator/validateBody';
 import { UserInsertOneCommand } from '../../../domain/command/UserInsertOneCommand';
 import { User } from '../../../domain/model/User';
@@ -21,7 +22,7 @@ export class InsertOneUserController {
   public constructor(private readonly commandBus: CommandBus) {}
 
   @route({
-    method: 'POST',
+    method: HttpMethod.POST,
     path: '/users',
     version: 'v1',
   })
