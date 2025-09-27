@@ -5,6 +5,7 @@ import { CommandBus } from '../../application/cqrs/bus/CommandBus';
 import { QueryBus } from '../../application/cqrs/bus/QueryBus';
 import { logger, LoggerSymbol } from '../../application/logger/Logger';
 import { AppErrorFilter, AppErrorFilterSymbol } from '../http/errorFilter/AppErrorFilter';
+import { AuthInterceptor } from '../http/interceptor/AuthInterceptor';
 
 export type ClassProvider = Newable;
 export type NamedClassProvider = {
@@ -50,6 +51,7 @@ export function setUpDI(container: GlobalContainer): Container {
     },
     QueryBus,
     CommandBus,
+    AuthInterceptor,
   ];
 
   container.bindMany(providers);

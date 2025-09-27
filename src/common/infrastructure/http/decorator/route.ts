@@ -6,19 +6,12 @@ export interface RouteOptions {
   version: `v${number}`;
 }
 
-export const routeOptionsMap: Map<string, Map<string, RouteOptions>> = new Map<string, Map<string, RouteOptions>>();
+export const routeOptionsByControllerAndMethodMap: Map<string, RouteOptions> = new Map();
 export function route(options: RouteOptions) {
   return function (target: object, propertyKey: string | symbol, _descriptor: PropertyDescriptor) {
     const controllerName: string = target.constructor.name;
     const methodName: string = propertyKey.toString();
-    const firstLevelValue: Map<string, RouteOptions> | undefined = routeOptionsMap.get(controllerName);
-
-    if (!firstLevelValue) {
-      const routeOptionsByMethod: Map<string, RouteOptions> = new Map<string, RouteOptions>();
-      routeOptionsByMethod.set(methodName, options);
-      routeOptionsMap.set(controllerName, routeOptionsByMethod);
-    } else {
-      firstLevelValue.set(methodName, options);
-    }
+    const key: string = `${controllerName}_${methodName}`;
+    routeOptionsByControllerAndMethodMap.set(key, options);
   };
 }
