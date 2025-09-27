@@ -1,27 +1,34 @@
 import type { Context } from 'hono';
-import { inject, injectable } from 'inversify';
+import { injectable } from 'inversify';
 import { z } from 'zod';
 
+import { QueryBus } from '../../../../common/application/cqrs/bus/QueryBus';
 import { route } from '../../../../common/infrastructure/http/decorator/route';
 import { validateQueryParams } from '../../../../common/infrastructure/http/validator/decorator/validateQueryParams';
 import { uuidsPipe } from '../../../../common/infrastructure/http/validator/pipe/uuidsPipe';
-import { UserService, UserServiceSymbol } from '../../../application/UserService';
 import { User } from '../../../domain/model/User';
+import { UserFindQuery } from '../../../domain/query/UserFindQuery';
 
-const findUserControllerQuerySchema: z.ZodType = z.object({
+const findUserQueryParamsSchema: z.ZodType = z.object({
   ids: uuidsPipe,
 });
 
+type FindUserQueryParams = {
+  ids?: string[];
+};
+
 @injectable()
 export class FindUserController {
-  public constructor(@inject(UserServiceSymbol) private readonly userService: UserService) {}
+  public constructor(private readonly queryBus: QueryBus) {}
   @route({
     method: 'GET',
     path: '/users',
     version: 'v1',
   })
-  @validateQueryParams(findUserControllerQuerySchema)
-  public async handleUsers(_: Context): Promise<User[]> {
-    return this.userService.getAll();
+  public async findAll(
+    _c: Context,
+    @validateQueryParams(findUserQueryParamsSchema) _queryParams: FindUserQueryParams,
+  ): Promise<User[]> {
+    return this.queryBus.execute(new UserFindQuery());
   }
 }

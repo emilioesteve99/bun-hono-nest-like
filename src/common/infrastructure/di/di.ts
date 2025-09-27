@@ -1,12 +1,10 @@
 import { Container, Newable } from 'inversify';
 
 import { setUpUserModule } from '../../../user/infrastructure/di/di';
+import { CommandBus } from '../../application/cqrs/bus/CommandBus';
+import { QueryBus } from '../../application/cqrs/bus/QueryBus';
 import { logger, LoggerSymbol } from '../../application/logger/Logger';
 import { AppErrorFilter, AppErrorFilterSymbol } from '../http/errorFilter/AppErrorFilter';
-import {
-  ZodErrorToHTTPExceptionConverter,
-  ZodErrorToHTTPExceptionConverterSymbol,
-} from '../http/validator/converter/ZodErrorToHTTPExceptionConverter';
 
 export type ClassProvider = Newable;
 export type NamedClassProvider = {
@@ -50,10 +48,8 @@ export function setUpDI(container: GlobalContainer): Container {
       provide: AppErrorFilterSymbol,
       useClass: AppErrorFilter,
     },
-    {
-      provide: ZodErrorToHTTPExceptionConverterSymbol,
-      useClass: ZodErrorToHTTPExceptionConverter,
-    },
+    QueryBus,
+    CommandBus,
   ];
 
   container.bindMany(providers);
@@ -63,8 +59,10 @@ export function setUpDI(container: GlobalContainer): Container {
   return container;
 }
 
-const container: GlobalContainer = new GlobalContainer();
+const di: GlobalContainer = new GlobalContainer({
+  autobind: true,
+});
 
-setUpDI(container);
+setUpDI(di);
 
-export { container };
+export { di };
