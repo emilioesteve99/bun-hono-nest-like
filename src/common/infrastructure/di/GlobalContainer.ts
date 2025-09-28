@@ -1,6 +1,6 @@
 import { Container } from 'inversify';
 
-import { Provider } from './di';
+import { Provider } from './Provider';
 
 export class GlobalContainer extends Container {
   public bindMany(providers: Provider[]): void {

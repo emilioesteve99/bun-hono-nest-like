@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import { DatabaseConfig } from '../../config/DatabaseConfig';
+import { DatabaseConfig } from '../../config/model/DatabaseConfig';
 
 export const MikroOrmSymbol: symbol = Symbol.for('MikroOrm');
 

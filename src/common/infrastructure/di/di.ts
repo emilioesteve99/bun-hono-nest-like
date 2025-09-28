@@ -2,18 +2,18 @@ import { MikroORM } from '@mikro-orm/core';
 
 import { GlobalContainer } from './GlobalContainer';
 import { Provider } from './Provider';
-import { userProviders } from '../../../user/infrastructure/di/di';
 import { CommandBus } from '../../application/bus/CommandBus';
 import { QueryBus } from '../../application/bus/QueryBus';
 import { logger, LoggerSymbol } from '../../application/logger/Logger';
-import { DatabaseConfig, DatabaseConfigLoader, DatabaseConfigSymbol } from '../config/DatabaseConfig';
+import { GetConfigConvictAdapter } from '../config/adapter/GetConfigConvictAdapter';
+import { configSchema } from '../config/model/configSchema';
+import { DatabaseConfig, DatabaseConfigSymbol } from '../config/model/DatabaseConfig';
 import { AppErrorFilter, AppErrorFilterSymbol } from '../http/errorFilter/AppErrorFilter';
 import { AuthInterceptor } from '../http/interceptor/AuthInterceptor';
-import { EntityManagerMiddleware } from '../http/middleware/EntityManagerMiddleware';
 import { entityManagerFactory, GlobalEntityManagerSymbol } from '../mikroOrm/factory/entityManagerFactory';
 import { MikroOrmSymbol, setUpMikroOrm } from '../mikroOrm/factory/setUpMikroOrm';
 
-const commonProviders: Provider[] = [
+export const commonProviders: Provider[] = [
   {
     provide: LoggerSymbol,
     useValue: logger,
@@ -39,11 +39,12 @@ const commonProviders: Provider[] = [
       return entityManagerFactory(orm);
     },
   },
-  EntityManagerMiddleware,
   {
     provide: DatabaseConfigSymbol,
     useResolvedValue: () => {
-      return new DatabaseConfigLoader().getAll();
+      const getConfigAdapter: GetConfigConvictAdapter = new GetConfigConvictAdapter();
+      getConfigAdapter.loadConfiguration(configSchema);
+      return getConfigAdapter.get('database');
     },
   },
 ];
@@ -51,7 +52,5 @@ const commonProviders: Provider[] = [
 const di: GlobalContainer = new GlobalContainer({
   autobind: true,
 });
-
-di.bindMany([...commonProviders, ...userProviders]);
 
 export { di };

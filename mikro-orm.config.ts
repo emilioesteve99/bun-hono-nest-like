@@ -1,7 +1,11 @@
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { DatabaseConfig, DatabaseConfigLoader } from './src/common/infrastructure/config/DatabaseConfig';
+import { GetConfigConvictAdapter } from './src/common/infrastructure/config/adapter/GetConfigConvictAdapter';
+import { configSchema } from './src/common/infrastructure/config/model/configSchema';
+import { DatabaseConfig } from './src/common/infrastructure/config/model/DatabaseConfig';
 
-const databaseConfig: DatabaseConfig = new DatabaseConfigLoader().getAll();
+const getConfigConvictAdapter: GetConfigConvictAdapter = new GetConfigConvictAdapter();
+getConfigConvictAdapter.loadConfiguration(configSchema);
+const databaseConfig: DatabaseConfig = getConfigConvictAdapter.get('database');
 
 export default {
   driver: PostgreSqlDriver,
