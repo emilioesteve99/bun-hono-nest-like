@@ -1,12 +1,15 @@
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { DatabaseConfig, DatabaseConfigLoader } from './src/common/infrastructure/config/DatabaseConfig';
+
+const databaseConfig: DatabaseConfig = new DatabaseConfigLoader().getAll();
 
 export default {
   driver: PostgreSqlDriver,
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER || 'user',
-  password: process.env.DB_PASSWORD || 'prueba',
-  dbName: process.env.DB_NAME || 'database',
+  host: databaseConfig.host,
+  port: databaseConfig.port,
+  user: databaseConfig.user,
+  password: databaseConfig.password,
+  dbName: databaseConfig.database,
   entities: ['./src/**/infrastructure/mikroOrm/model/*MikroOrm.ts'],
   entitiesTs: ['./src/**/infrastructure/mikroOrm/model/*MikroOrm.ts'],
   migrations: {

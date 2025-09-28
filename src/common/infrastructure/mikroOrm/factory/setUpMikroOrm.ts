@@ -1,32 +1,26 @@
 import { MikroORM } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-export interface MikroOrmClientOptions {
-  host: string;
-  dbName: string;
-  user: string;
-  password: string;
-  port: number;
-}
+import { DatabaseConfig } from '../../config/DatabaseConfig';
 
 export const MikroOrmSymbol: symbol = Symbol.for('MikroOrm');
 
-export async function setUpMikroOrm(options: MikroOrmClientOptions): Promise<MikroORM> {
+export async function setUpMikroOrm(databaseConfig: DatabaseConfig): Promise<MikroORM> {
   return MikroORM.init({
     connect: true,
-    dbName: options.dbName,
+    dbName: databaseConfig.database,
     driver: PostgreSqlDriver,
     entities: ['../../../../**/infrastructure/mikroOrm/model/*MikroOrm.ts'],
     entitiesTs: ['../../../../**/infrastructure/mikroOrm/model/*MikroOrm.ts'],
     forceUndefined: true,
     forceUtcTimezone: true,
-    host: options.host,
-    password: options.password,
+    host: databaseConfig.host,
+    password: databaseConfig.password,
     pool: {
       max: 10,
       min: 1,
     },
-    port: 5432,
-    user: options.user,
+    port: databaseConfig.port,
+    user: databaseConfig.user,
   });
 }

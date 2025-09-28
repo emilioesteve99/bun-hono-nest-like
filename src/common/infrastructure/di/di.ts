@@ -5,6 +5,7 @@ import { setUpUserModule } from '../../../user/infrastructure/di/di';
 import { CommandBus } from '../../application/bus/CommandBus';
 import { QueryBus } from '../../application/bus/QueryBus';
 import { logger, LoggerSymbol } from '../../application/logger/Logger';
+import { DatabaseConfig, DatabaseConfigLoader, DatabaseConfigSymbol } from '../config/DatabaseConfig';
 import { AppErrorFilter, AppErrorFilterSymbol } from '../http/errorFilter/AppErrorFilter';
 import { AuthInterceptor } from '../http/interceptor/AuthInterceptor';
 import { EntityManagerMiddleware } from '../http/middleware/EntityManagerMiddleware';
@@ -12,43 +13,49 @@ import { entityManagerFactory, GlobalEntityManagerSymbol } from '../mikroOrm/fac
 import { MikroOrmSymbol, setUpMikroOrm } from '../mikroOrm/factory/setUpMikroOrm';
 
 export type ClassProvider = Newable;
+
 export type NamedClassProvider = {
   provide: symbol | string;
   useClass: Newable;
 };
+
 export type NamedValueProvider = {
   provide: symbol | string;
   useValue: unknown;
 };
+
 export type ResolvedValueProvider = {
   provide: symbol | string;
   useResolvedValue: (...args: any[]) => any;
   inject?: (string | symbol | Newable)[];
 };
+
 export type Provider = ClassProvider | NamedClassProvider | NamedValueProvider | ResolvedValueProvider;
 
 export class GlobalContainer extends Container {
   public bindMany(providers: Provider[]): void {
     for (const provider of providers) {
-      if (
-        // Check if provider is a class
-        typeof provider === 'function' &&
-        Boolean(provider.prototype) &&
-        Object.prototype.hasOwnProperty.call(provider.prototype, 'constructor')
-      ) {
+      if (typeof provider === 'function' && Boolean(provider.prototype?.constructor)) {
         this.bind(provider.name).to(provider).inSingletonScope();
-      } else if ((provider as NamedClassProvider).useClass !== undefined) {
-        this.bind((provider as NamedClassProvider).provide)
-          .to((provider as NamedClassProvider).useClass)
-          .inSingletonScope();
-      } else if ((provider as NamedValueProvider).useValue !== undefined) {
-        this.bind((provider as NamedValueProvider).provide).toConstantValue((provider as NamedValueProvider).useValue);
-      } else if ((provider as ResolvedValueProvider).useResolvedValue !== undefined) {
-        const factoryProvider: ResolvedValueProvider = provider as ResolvedValueProvider;
-        this.bind(factoryProvider.provide)
-          .toResolvedValue(async (...injections: any[]) => {
-            return factoryProvider.useResolvedValue(...injections);
-          }, factoryProvider.inject ?? [])
+        continue;
+      }
+
+      if ('useClass' in provider) {
+        this.bind(provider.provide).to(provider.useClass).inSingletonScope();
+        continue;
+      }
+
+      if ('useValue' in provider) {
+        this.bind(provider.provide).toConstantValue(provider.useValue);
+        continue;
+      }
+
+      if ('useResolvedValue' in provider) {
+        this.bind(provider.provide)
+          .toResolvedValue(
+            async (...injections: any[]) => provider.useResolvedValue(...injections),
+            provider.inject ?? [],
+          )
           .inSingletonScope();
       }
     }
@@ -69,16 +76,10 @@ export function setUpDI(container: GlobalContainer): Container {
     CommandBus,
     AuthInterceptor,
     {
+      inject: [DatabaseConfigSymbol],
       provide: MikroOrmSymbol,
-      useResolvedValue: async () => {
-        const mikroOrm: MikroORM = await setUpMikroOrm({
-          dbName: 'database',
-          host: 'pg',
-          password: 'prueba',
-          port: 5432,
-          user: 'user',
-        });
-        return mikroOrm;
+      useResolvedValue: async (databaseConfig: DatabaseConfig) => {
+        return setUpMikroOrm(databaseConfig);
       },
     },
     {
@@ -89,6 +90,12 @@ export function setUpDI(container: GlobalContainer): Container {
       },
     },
     EntityManagerMiddleware,
+    {
+      provide: DatabaseConfigSymbol,
+      useResolvedValue: () => {
+        return new DatabaseConfigLoader().getAll();
+      },
+    },
   ];
 
   container.bindMany(providers);
