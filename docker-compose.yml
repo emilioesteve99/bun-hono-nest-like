@@ -1,27 +1,29 @@
 version: '3.7'
 
 services:
-  database:
-    image: postgres
+  pg:
+    image: postgres:17.6
     environment:
-      POSTGRES_DB: 'database'
-      POSTGRES_USER: 'user'
-      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - '5432:5432'
+      - "${DB_PORT}:5432"
     volumes:
       - ./data/postgresql:/var/lib/postgresql/data
+    user: "0"
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    command: bun run dev
+    command: bun run --watch src/index.ts
     volumes:
-      - ./src:/home/node/app/src
+      - ./src:/home/bun/app/src
     env_file:
       - .env
     depends_on:
-      - database
+      - pg
     ports:
-      - ${NODE_PORT}:${NODE_PORT}
+      - "${NODE_PORT}:${NODE_PORT}"
+    user: "0"

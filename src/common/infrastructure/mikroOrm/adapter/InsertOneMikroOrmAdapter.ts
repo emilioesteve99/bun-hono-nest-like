@@ -6,13 +6,14 @@ import { InsertOneAdapter } from '../../../domain/adapter/InsertOneAdapter';
 import type { ConverterAsync } from '../../../domain/converter/ConverterAsync';
 import { PostgreSqlErrorType } from '../../pg/model/PostgreSqlErrorType';
 import { isPostgreSqlErrorWithErrorType } from '../../pg/utils/isPostgreSqlErrorWithErrorType';
+import { entityManagerContext } from '../context/EntityManagerContext';
 
 @injectable()
 export class InsertOneMikroOrmAdapter<TCommand, TModelDb extends AnyEntity, TModel>
   implements InsertOneAdapter<TCommand, TModel>
 {
   public constructor(
-    private readonly entityRepository: EntityRepository<TModelDb>,
+    private readonly entityClass: new () => TModelDb,
     private readonly insertOneCommandToInsertOneQueryMikroOrmConverterAsync: ConverterAsync<
       TCommand,
       RequiredEntityData<TModelDb>
@@ -24,9 +25,10 @@ export class InsertOneMikroOrmAdapter<TCommand, TModelDb extends AnyEntity, TMod
     const insertOneQueryMikroOrm: RequiredEntityData<TModelDb> =
       await this.insertOneCommandToInsertOneQueryMikroOrmConverterAsync.convert(command);
 
-    const modelDb: TModelDb = this.entityRepository.create(insertOneQueryMikroOrm);
+    const entityManager: EntityManager = entityManagerContext.getEntityManager();
+    const repository: EntityRepository<TModelDb> = entityManager.getRepository(this.entityClass);
 
-    const entityManager: EntityManager = this.entityRepository.getEntityManager();
+    const modelDb: TModelDb = repository.create(insertOneQueryMikroOrm);
 
     try {
       await entityManager.persistAndFlush(modelDb);
@@ -40,8 +42,6 @@ export class InsertOneMikroOrmAdapter<TCommand, TModelDb extends AnyEntity, TMod
       }
     }
 
-    const model: TModel = await this.modelDbToModelConverterAsync.convert(modelDb);
-
-    return model;
+    return this.modelDbToModelConverterAsync.convert(modelDb);
   }
 }

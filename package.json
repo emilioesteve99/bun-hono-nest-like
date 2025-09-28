@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "build": "bun build src/index.ts --outdir dist"
+    "build": "bun build src/index.ts --outdir dist",
+    "migration:create": "mikro-orm migration:create",
+    "migration:up": "mikro-orm migration:up",
+    "migration:down": "mikro-orm migration:down",
+    "migrations:fresh": "mikro-orm migration:fresh"
   },
   "dependencies": {
     "@mikro-orm/cli": "6.5.6",
     "@mikro-orm/migrations": "6.5.6",
+    "@mikro-orm/postgresql": "6.5.6",
+    "ajv": "8.17.1",
     "hono": "4.9.8",
     "inversify": "7.10.1",
     "pino": "9.11.0",

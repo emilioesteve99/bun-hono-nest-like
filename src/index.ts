@@ -3,23 +3,32 @@ import { showRoutes } from 'hono/dev';
 
 import { Router } from './common/infrastructure/http/router/Router';
 
-const app: Hono = new Hono();
+async function main() {
+  const app: Hono = new Hono();
 
-Router.setUpRoutes({
-  app,
-});
+  await Router.setUpMiddlewares({
+    app,
+  });
 
-showRoutes(app, {
-  verbose: true,
-});
+  Router.setUpRoutes({
+    app,
+  });
 
-Router.setUpErrorFilters({
-  app,
-});
+  showRoutes(app, {
+    verbose: true,
+  });
 
-Bun.serve({
-  development: true,
-  fetch: app.fetch,
-  hostname: '0.0.0.0',
-  port: 4000,
-});
+  Router.setUpErrorFilters({
+    app,
+  });
+
+  Bun.serve({
+    development: true,
+    fetch: app.fetch,
+    hostname: '0.0.0.0',
+    port: 4000,
+  });
+}
+
+// eslint-disable-next-line no-console
+main().catch(console.error);

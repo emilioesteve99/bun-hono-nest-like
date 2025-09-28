@@ -11,14 +11,13 @@ export interface MikroOrmClientOptions {
 
 export const MikroOrmSymbol: symbol = Symbol.for('MikroOrm');
 
-export async function mikroOrmFactory(options: MikroOrmClientOptions): Promise<MikroORM> {
-  console.log('A');
-  const orm: MikroORM = await MikroORM.init({
-    driver: PostgreSqlDriver,
+export async function setUpMikroOrm(options: MikroOrmClientOptions): Promise<MikroORM> {
+  return MikroORM.init({
     connect: true,
     dbName: options.dbName,
-    entities: ['./dist/*/infrastructure/mikroOrm/model/!(AnyEntity)*.js'],
-    entitiesTs: ['./src/*/infrastructure/mikroOrm/model/!(AnyEntity)*.ts'],
+    driver: PostgreSqlDriver,
+    entities: ['../../../../**/infrastructure/mikroOrm/model/*MikroOrm.ts'],
+    entitiesTs: ['../../../../**/infrastructure/mikroOrm/model/*MikroOrm.ts'],
     forceUndefined: true,
     forceUtcTimezone: true,
     host: options.host,
@@ -30,6 +29,4 @@ export async function mikroOrmFactory(options: MikroOrmClientOptions): Promise<M
     port: 5432,
     user: options.user,
   });
-  console.log('B');
-  return orm;
 }

@@ -1,11 +1,13 @@
-import { Context, Hono } from 'hono';
+import { Context, Hono, Next } from 'hono';
 import { Newable } from 'inversify';
 
 import { di } from '../../di/di';
+import { middlewares } from '../decorator/middleware';
 import { requestUserMapByClassAndMethod, RequestUserOptions } from '../decorator/requestUser';
 import { RouteOptions, routeOptionsByControllerAndMethodMap } from '../decorator/route';
 import { interceptorsByControllerAndMethodMap } from '../decorator/useInterceptor';
 import { AppErrorFilterSymbol, ErrorFilter } from '../errorFilter/AppErrorFilter';
+import { Middleware } from '../middleware/Middleware';
 import { AUTH_USER_KEY } from '../model/CommonHttpConstants';
 import { Interceptor } from '../model/Interceptor';
 import { BodyOptions, bodyOptionsMapByClassAndMethod } from '../validator/decorator/validateBody';
@@ -75,6 +77,15 @@ export class Router {
 
         const response: unknown = await controller[method](...args);
         return c.json(response);
+      });
+    }
+  }
+
+  public static async setUpMiddlewares(options: RouterSetUpRoutesOptions) {
+    for (const middlewareIdentifier of middlewares) {
+      const middleware: Middleware = await di.getAsync(middlewareIdentifier);
+      options.app.use(middleware.path, async (c: Context, next: Next) => {
+        return middleware.use(c, next);
       });
     }
   }

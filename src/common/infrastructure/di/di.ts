@@ -1,4 +1,3 @@
-import { ResolutionContext } from '@inversifyjs/core/lib/cjs/resolution/models/ResolutionContext';
 import { MikroORM } from '@mikro-orm/core';
 import { Container, Newable } from 'inversify';
 
@@ -8,8 +7,9 @@ import { QueryBus } from '../../application/bus/QueryBus';
 import { logger, LoggerSymbol } from '../../application/logger/Logger';
 import { AppErrorFilter, AppErrorFilterSymbol } from '../http/errorFilter/AppErrorFilter';
 import { AuthInterceptor } from '../http/interceptor/AuthInterceptor';
-import { entityManagerFactory, EntityManagerSymbol } from '../mikroOrm/factory/entityManagerFactory';
-import { mikroOrmFactory, MikroOrmSymbol } from '../mikroOrm/factory/mikroOrmFactory';
+import { EntityManagerMiddleware } from '../http/middleware/EntityManagerMiddleware';
+import { entityManagerFactory, GlobalEntityManagerSymbol } from '../mikroOrm/factory/entityManagerFactory';
+import { MikroOrmSymbol, setUpMikroOrm } from '../mikroOrm/factory/setUpMikroOrm';
 
 export type ClassProvider = Newable;
 export type NamedClassProvider = {
@@ -20,12 +20,12 @@ export type NamedValueProvider = {
   provide: symbol | string;
   useValue: unknown;
 };
-export type FactoryProvider = {
+export type ResolvedValueProvider = {
   provide: symbol | string;
-  useFactory: (...args: any[]) => any;
+  useResolvedValue: (...args: any[]) => any;
   inject?: (string | symbol | Newable)[];
 };
-export type Provider = ClassProvider | NamedClassProvider | NamedValueProvider | FactoryProvider;
+export type Provider = ClassProvider | NamedClassProvider | NamedValueProvider | ResolvedValueProvider;
 
 export class GlobalContainer extends Container {
   public bindMany(providers: Provider[]): void {
@@ -43,15 +43,12 @@ export class GlobalContainer extends Container {
           .inSingletonScope();
       } else if ((provider as NamedValueProvider).useValue !== undefined) {
         this.bind((provider as NamedValueProvider).provide).toConstantValue((provider as NamedValueProvider).useValue);
-      } else if ((provider as FactoryProvider).useFactory !== undefined) {
-        const factoryProvider: FactoryProvider = provider as FactoryProvider;
+      } else if ((provider as ResolvedValueProvider).useResolvedValue !== undefined) {
+        const factoryProvider: ResolvedValueProvider = provider as ResolvedValueProvider;
         this.bind(factoryProvider.provide)
-          .toDynamicValue((context: ResolutionContext) => {
-            const injections: unknown[] | undefined = factoryProvider.inject?.map((identifier: unknown) =>
-              context.get(identifier as symbol),
-            );
-            return factoryProvider.useFactory(...(injections ?? []));
-          })
+          .toResolvedValue(async (...injections: any[]) => {
+            return factoryProvider.useResolvedValue(...injections);
+          }, factoryProvider.inject ?? [])
           .inSingletonScope();
       }
     }
@@ -73,11 +70,11 @@ export function setUpDI(container: GlobalContainer): Container {
     AuthInterceptor,
     {
       provide: MikroOrmSymbol,
-      useFactory: async () => {
-        const mikroOrm: MikroORM = await mikroOrmFactory({
+      useResolvedValue: async () => {
+        const mikroOrm: MikroORM = await setUpMikroOrm({
           dbName: 'database',
-          host: 'localhost',
-          password: 'password',
+          host: 'pg',
+          password: 'prueba',
           port: 5432,
           user: 'user',
         });
@@ -86,11 +83,12 @@ export function setUpDI(container: GlobalContainer): Container {
     },
     {
       inject: [MikroOrmSymbol],
-      provide: EntityManagerSymbol,
-      useFactory: (orm: MikroORM) => {
+      provide: GlobalEntityManagerSymbol,
+      useResolvedValue: (orm: MikroORM) => {
         return entityManagerFactory(orm);
       },
     },
+    EntityManagerMiddleware,
   ];
 
   container.bindMany(providers);

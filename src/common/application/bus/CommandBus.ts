@@ -14,7 +14,7 @@ export class CommandBus {
       throw new Error(`CommandHandler not found for command: ${commandName}`);
     }
 
-    const commandHandler: CommandHandler<TCommand, TResult> = di.get(commandHandlerName);
+    const commandHandler: CommandHandler<TCommand, TResult> = await di.getAsync(commandHandlerName);
     return commandHandler.execute(command);
   }
 }
