@@ -1,18 +1,21 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 
-import { CommandHandler } from '../../../common/application/cqrs/commandHandler/CommandHandler';
-import { commandHandler } from '../../../common/application/cqrs/decorator/commandHandler';
+import { CommandHandler } from '../../../common/application/commandHandler/CommandHandler';
+import { commandHandler } from '../../../common/application/decorator/commandHandler';
+import type { InsertOneAdapter } from '../../../common/domain/adapter/InsertOneAdapter';
 import { UserInsertOneCommand } from '../../domain/command/UserInsertOneCommand';
 import { User } from '../../domain/model/User';
+import { InsertOneUserMikroOrmAdapterSymbol } from '../../infrastructure/mikroOrm/adapter/InsertOneUserMikroOrmAdapter';
 
 @injectable()
 @commandHandler(UserInsertOneCommand)
 export class UserInsertOneCommandHandler implements CommandHandler<UserInsertOneCommand, User> {
+  public constructor(
+    @inject(InsertOneUserMikroOrmAdapterSymbol)
+    private readonly userInsertOneMikroOrmAdapter: InsertOneAdapter<UserInsertOneCommand, User>,
+  ) {}
+
   public async execute(command: UserInsertOneCommand): Promise<User> {
-    const user: User = {
-      id: '1',
-      name: 'John Doe',
-    };
-    return user;
+    return this.userInsertOneMikroOrmAdapter.insertOne(command);
   }
 }

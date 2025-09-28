@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 
-import { queryHandler } from '../../../common/application/cqrs/decorator/queryHandler';
-import { QueryHandler } from '../../../common/application/cqrs/queryHandler/QueryHandler';
+import { queryHandler } from '../../../common/application/decorator/queryHandler';
+import { QueryHandler } from '../../../common/application/queryHandler/QueryHandler';
 import { User } from '../../domain/model/User';
 import { UserFindQuery } from '../../domain/query/UserFindQuery';
 

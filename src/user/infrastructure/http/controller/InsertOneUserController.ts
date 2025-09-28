@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import { injectable } from 'inversify';
 import { z } from 'zod';
 
-import { CommandBus } from '../../../../common/application/cqrs/bus/CommandBus';
+import { CommandBus } from '../../../../common/application/bus/CommandBus';
 import { route } from '../../../../common/infrastructure/http/decorator/route';
 import { HttpMethod } from '../../../../common/infrastructure/http/model/HttpMethod';
 import { validateBody } from '../../../../common/infrastructure/http/validator/decorator/validateBody';
@@ -26,8 +26,12 @@ export class InsertOneUserController {
     path: '/users',
     version: 'v1',
   })
-  public async insertOne(_c: Context, @validateBody(insertOneUserBodySchema) _body: InsertOneUserBody): Promise<User> {
-    const user: User = await this.commandBus.execute(new UserInsertOneCommand());
+  public async insertOne(_c: Context, @validateBody(insertOneUserBodySchema) body: InsertOneUserBody): Promise<User> {
+    const user: User = await this.commandBus.execute(
+      new UserInsertOneCommand({
+        name: body.name,
+      }),
+    );
     return user;
   }
 }

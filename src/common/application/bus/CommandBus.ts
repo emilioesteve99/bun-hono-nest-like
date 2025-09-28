@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { di } from '../../../infrastructure/di/di';
+import { di } from '../../infrastructure/di/di';
 import { CommandHandler } from '../commandHandler/CommandHandler';
 import { commandHandlersByCommandType } from '../decorator/commandHandler';
 import { Command } from '../model/Command';

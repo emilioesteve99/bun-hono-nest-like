@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { di } from '../../../infrastructure/di/di';
+import { di } from '../../infrastructure/di/di';
 import { queryHandlersByCommandType } from '../decorator/queryHandler';
 import { Query } from '../model/Query';
 import { QueryHandler } from '../queryHandler/QueryHandler';

@@ -1,3 +1,9 @@
-import { Command } from '../../../common/application/cqrs/model/Command';
+import { Command } from '../../../common/application/model/Command';
 
-export class UserInsertOneCommand implements Command {}
+export class UserInsertOneCommand implements Command {
+  public readonly name!: string;
+
+  public constructor(options: Required<UserInsertOneCommand>) {
+    Object.assign(this, options);
+  }
+}

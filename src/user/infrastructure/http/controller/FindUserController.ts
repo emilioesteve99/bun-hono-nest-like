@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import { injectable } from 'inversify';
 import { z } from 'zod';
 
-import { QueryBus } from '../../../../common/application/cqrs/bus/QueryBus';
+import { QueryBus } from '../../../../common/application/bus/QueryBus';
 import { requestUser } from '../../../../common/infrastructure/http/decorator/requestUser';
 import { route } from '../../../../common/infrastructure/http/decorator/route';
 import { useInterceptor } from '../../../../common/infrastructure/http/decorator/useInterceptor';
