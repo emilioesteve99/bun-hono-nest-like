@@ -1,4 +1,4 @@
-import { GlobalContainer, Provider } from '../../../common/infrastructure/di/di';
+import { Provider } from '../../../common/infrastructure/di/Provider';
 import { UserInsertOneCommandHandler } from '../../application/commandHandler/UserInsertOneCommandHandler';
 import { UserFindQueryHandler } from '../../application/queryHandler/UserFindQueryHandler';
 import { FindUserController } from '../http/controller/FindUserController';
@@ -16,27 +16,26 @@ import {
   UserMikroOrmToUserConverterAsyncSymbol,
 } from '../mikroOrm/converter/UserMikroOrmToUserConverterAsync';
 
-export function setUpUserModule(container: GlobalContainer): void {
-  const commandHandlers: Provider[] = [UserInsertOneCommandHandler];
+const commandHandlers: Provider[] = [UserInsertOneCommandHandler];
 
-  const controllers: Provider[] = [FindUserController, InsertOneUserController];
+const controllers: Provider[] = [FindUserController, InsertOneUserController];
 
-  const queryHandlers: Provider[] = [UserFindQueryHandler];
+const queryHandlers: Provider[] = [UserFindQueryHandler];
 
-  const providers: Provider[] = [
-    {
-      provide: UserMikroOrmToUserConverterAsyncSymbol,
-      useClass: UserMikroOrmToUserConverterAsync,
-    },
-    {
-      provide: UserInsertOneCommandToUserInsertOneQueryMikroOrmConverterAsyncSymbol,
-      useClass: UserInsertOneCommandToUserInsertOneQueryMikroOrmConverterAsync,
-    },
-    {
-      provide: InsertOneUserMikroOrmAdapterSymbol,
-      useClass: InsertOneUserMikroOrmAdapter,
-    },
-  ];
-
-  container.bindMany([...commandHandlers, ...controllers, ...queryHandlers, ...providers]);
-}
+export const userProviders: Provider[] = [
+  ...commandHandlers,
+  ...controllers,
+  ...queryHandlers,
+  {
+    provide: UserMikroOrmToUserConverterAsyncSymbol,
+    useClass: UserMikroOrmToUserConverterAsync,
+  },
+  {
+    provide: UserInsertOneCommandToUserInsertOneQueryMikroOrmConverterAsyncSymbol,
+    useClass: UserInsertOneCommandToUserInsertOneQueryMikroOrmConverterAsync,
+  },
+  {
+    provide: InsertOneUserMikroOrmAdapterSymbol,
+    useClass: InsertOneUserMikroOrmAdapter,
+  },
+];
