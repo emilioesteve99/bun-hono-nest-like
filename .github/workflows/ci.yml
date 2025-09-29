@@ -3,63 +3,38 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - package.json
+      - bun.lock
+      - src/**
+      - mikro-orm.config.ts
+      - .prettierrc
+      - .prettierignore
+      - .eslintrc.js
+      - .eslintignore
+      - tsconfig.build.json
+      - tsconfig.json
+      - .github/**
+
   pull_request:
     branches: [main]
+    paths:
+      - package.json
+      - bun.lock
+      - src/**
+      - mikro-orm.config.ts
+      - .prettierrc
+      - .prettierignore
+      - .eslintrc.js
+      - .eslintignore
+      - tsconfig.build.json
+      - tsconfig.json
+      - .github/**
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v1
-      - name: Cache bun dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-      - name: Install dependencies
-        run: bun install
-      - name: Lint
-        run: bun run lint:check
-
+    uses: ./.github/workflows/ci-lint-check.yml
   format:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v1
-      - name: Cache bun dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-      - name: Install dependencies
-        run: bun install
-      - name: Format
-        run: bun run format:check
-
+    uses: ./.github/workflows/ci-format-check.yml
   test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v1
-      - name: Cache bun dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-      - name: Install dependencies
-        run: bun install
-      - name: Test
-        run: bun run test
+    uses: ./.github/workflows/ci-unit-test.yml

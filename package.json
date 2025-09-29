@@ -2,8 +2,10 @@
   "name": "bun-hono-nest-like",
   "version": "1.0.0",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "build": "bun build src/index.ts --outdir dist",
+    "dev": "bun run --hot src/main.ts --target bun",
+    "build": "bun build src/main.ts --outdir dist --target bun",
+    "start": "bun run src/main.js --target bun",
+    "prepare": "husky install",
     "migration:create": "mikro-orm migration:create",
     "migration:up": "mikro-orm migration:up",
     "migration:down": "mikro-orm migration:down",
