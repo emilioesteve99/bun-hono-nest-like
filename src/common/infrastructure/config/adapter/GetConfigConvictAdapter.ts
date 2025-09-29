@@ -12,8 +12,6 @@ export class GetConfigConvictAdapter implements GetConfigAdapter {
 
   public loadConfiguration(schema: convict.Schema<Config>): void {
     this.config = convict<Config>(schema);
-    this.config.validate({ allowed: 'strict' });
-
     const environmentJsonPath: string = path.join(process.cwd(), 'environment.json');
 
     try {

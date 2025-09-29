@@ -20,3 +20,18 @@ Hono is an ultra-lightweight web framework for building fast applications and AP
 
    ```bash
    bun run dev
+   ```
+
+# Copilot Templates
+
+This project includes specific templates to help GitHub Copilot and developers maintain code quality and consistency.
+
+Templates are located at:
+
+- `.github/copilot/`
+
+For example, for unit tests, see:
+
+- `.github/copilot/UNIT_TEST_TEMPLATE.md`
+
+These templates contain requirements, examples, and best practices that must be followed when developing and testing the project.

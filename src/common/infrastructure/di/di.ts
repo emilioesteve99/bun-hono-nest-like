@@ -4,7 +4,7 @@ import { GlobalContainer } from './GlobalContainer';
 import { Provider } from './Provider';
 import { CommandBus } from '../../application/bus/CommandBus';
 import { QueryBus } from '../../application/bus/QueryBus';
-import { logger, LoggerSymbol } from '../../application/logger/Logger';
+import { logger, LoggerSymbol } from '../../application/logger/logger';
 import { GetConfigConvictAdapter } from '../config/adapter/GetConfigConvictAdapter';
 import { configSchema } from '../config/model/configSchema';
 import { DatabaseConfig, DatabaseConfigSymbol } from '../config/model/DatabaseConfig';
