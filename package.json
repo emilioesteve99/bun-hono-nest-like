@@ -10,7 +10,7 @@
     "migrations:fresh": "mikro-orm migration:fresh",
     "lint:check": "eslint src --ext .ts,.js --max-warnings=0 --ignore-path .eslintignore",
     "format:check": "prettier --check src --ignore-path .prettierignore",
-    "test": "echo 'Aquí irá bun run test cuando se implementen los tests'"
+    "test": "echo 'Run unit tests when available'"
   },
   "dependencies": {
     "@mikro-orm/cli": "6.5.6",
