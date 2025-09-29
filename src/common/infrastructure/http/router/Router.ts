@@ -25,53 +25,71 @@ export class Router {
         throw new Error(`Controller route options for ${controllerName} not found`);
       }
 
-      const controller: any = di.get(controllerName);
-      const honoAppMethod: 'get' | 'post' | 'put' | 'delete' | 'patch' = routeOptions.method.toLowerCase() as
-        | 'get'
-        | 'post'
-        | 'put'
-        | 'delete'
-        | 'patch';
+      const controller: { [method: string]: (...args: unknown[]) => Promise<unknown> } = di.get(controllerName);
+      const honoAppMethod: 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'all' =
+        routeOptions.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'all';
       const finalPath: string = `/${routeOptions.version}${routeOptions.path}`.replaceAll('//', '/');
       app[honoAppMethod](finalPath, async (c: Context) => {
-        const globalEntityManager: EntityManager = di.get(GlobalEntityManagerSymbol);
-        const requestEntityManager: EntityManager = globalEntityManager.fork();
-        return entityManagerContext.run(requestEntityManager, async () => {
-          const interceptors: Newable[] | undefined = interceptorsByControllerAndMethodMap.get(key);
-          if (interceptors !== undefined) {
-            for (const interceptor of interceptors) {
-              const interceptorInstance: Interceptor = di.get(interceptor.name);
-              // eslint-disable-next-line no-await-in-loop
-              await interceptorInstance.intercept(c);
-            }
-          }
-
-          const args: unknown[] = [c];
-          const queryParamsOptions: QueryParamsOptions | undefined = queryParamsOptionsMapByClassAndMethod.get(key);
-          if (queryParamsOptions !== undefined) {
-            args[queryParamsOptions.parameterIndex] = validateZodSchema(queryParamsOptions.schema, c.req.query());
-          }
-
-          const pathParamsOptions: PathParamsOptions | undefined = pathParamsOptionsMapByClassAndMethod.get(key);
-          if (pathParamsOptions !== undefined) {
-            args[pathParamsOptions.parameterIndex] = validateZodSchema(pathParamsOptions.schema, c.req.param());
-          }
-
-          const bodyOptions: BodyOptions | undefined = bodyOptionsMapByClassAndMethod.get(key);
-          if (bodyOptions !== undefined) {
-            args[bodyOptions.parameterIndex] = validateZodSchema(bodyOptions.schema, await c.req.json());
-          }
-
-          const requestUserOptions: RequestUserOptions | undefined = requestUserMapByClassAndMethod.get(key);
-          if (requestUserOptions !== undefined) {
-            args[requestUserOptions.parameterIndex] = c.get(AUTH_USER_KEY);
-          }
-
-          const response: unknown = await controller[method](...args);
-          return c.json(response);
-        });
+        return this.setRouteHandler(c, key, controller, method);
       });
     }
+  }
+
+  private static async setRouteHandler(
+    c: Context,
+    controllerAndMethodKey: string,
+    controller: { [method: string]: (...args: unknown[]) => Promise<unknown> },
+    method: string,
+  ) {
+    const globalEntityManager: EntityManager = di.get(GlobalEntityManagerSymbol);
+    const requestEntityManager: EntityManager = globalEntityManager.fork();
+    return entityManagerContext.run(requestEntityManager, async () => {
+      await this.setRouteInterceptors(c, controllerAndMethodKey);
+      const args: unknown[] = await this.getHandlerArgs(c, controllerAndMethodKey);
+      const response: unknown = await controller[method]!(...args);
+      return c.json(response);
+    });
+  }
+
+  private static async setRouteInterceptors(c: Context, controllerAndMethodKey: string) {
+    const interceptors: Newable[] | undefined = interceptorsByControllerAndMethodMap.get(controllerAndMethodKey);
+    if (interceptors !== undefined) {
+      const promises: Promise<void>[] = [];
+      for (const interceptor of interceptors) {
+        const interceptorInstance: Interceptor = di.get(interceptor.name);
+        promises.push(interceptorInstance.intercept(c));
+      }
+
+      await Promise.all(promises);
+    }
+  }
+
+  private static async getHandlerArgs(c: Context, controllerAndMethodKey: string): Promise<unknown[]> {
+    const args: unknown[] = [c];
+    const queryParamsOptions: QueryParamsOptions | undefined =
+      queryParamsOptionsMapByClassAndMethod.get(controllerAndMethodKey);
+    if (queryParamsOptions !== undefined) {
+      args[queryParamsOptions.parameterIndex] = validateZodSchema(queryParamsOptions.schema, c.req.query());
+    }
+
+    const pathParamsOptions: PathParamsOptions | undefined =
+      pathParamsOptionsMapByClassAndMethod.get(controllerAndMethodKey);
+    if (pathParamsOptions !== undefined) {
+      args[pathParamsOptions.parameterIndex] = validateZodSchema(pathParamsOptions.schema, c.req.param());
+    }
+
+    const bodyOptions: BodyOptions | undefined = bodyOptionsMapByClassAndMethod.get(controllerAndMethodKey);
+    if (bodyOptions !== undefined) {
+      args[bodyOptions.parameterIndex] = validateZodSchema(bodyOptions.schema, await c.req.json());
+    }
+
+    const requestUserOptions: RequestUserOptions | undefined =
+      requestUserMapByClassAndMethod.get(controllerAndMethodKey);
+    if (requestUserOptions !== undefined) {
+      args[requestUserOptions.parameterIndex] = c.get(AUTH_USER_KEY);
+    }
+
+    return args;
   }
 
   public static setUpErrorFilters(app: Hono) {
