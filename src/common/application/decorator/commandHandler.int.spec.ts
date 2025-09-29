@@ -8,7 +8,7 @@ class TestCommand {}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class TestCommandHandler {}
 
-describe('commandHandler decorator', () => {
+describe('@commandHandler()', () => {
   describe('when a handler is decorated', () => {
     it('should register the handler in commandHandlersByCommandType', () => {
       expect(commandHandlersByCommandType.get('TestCommand')).toBe('TestCommandHandler');
