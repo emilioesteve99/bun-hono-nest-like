@@ -1,9 +1,9 @@
 import { AnyEntity, EntityManager, EntityRepository, RequiredEntityData } from '@mikro-orm/core';
-import { HTTPException } from 'hono/http-exception';
 import { injectable } from 'inversify';
 
 import { InsertOneAdapter } from '../../../domain/adapter/InsertOneAdapter';
 import type { ConverterAsync } from '../../../domain/converter/ConverterAsync';
+import { HttpException } from '../../http/exception/HttpException';
 import { PostgreSqlErrorType } from '../../pg/model/PostgreSqlErrorType';
 import { isPostgreSqlErrorWithErrorType } from '../../pg/utils/isPostgreSqlErrorWithErrorType';
 import { entityManagerContext } from '../context/EntityManagerContext';
@@ -34,9 +34,9 @@ export class InsertOneMikroOrmAdapter<TCommand, TModelDb extends AnyEntity, TMod
       await entityManager.persistAndFlush(modelDb);
     } catch (error: unknown) {
       if (isPostgreSqlErrorWithErrorType(error, [PostgreSqlErrorType.FOREIGN_KEY_VIOLATION])) {
-        throw new HTTPException(409, { message: 'Foreign key violation' });
+        throw new HttpException(409, { message: 'Foreign key violation' });
       } else if (isPostgreSqlErrorWithErrorType(error, [PostgreSqlErrorType.UNIQUE_VIOLATION])) {
-        throw new HTTPException(409, { message: 'Duplicated entity' });
+        throw new HttpException(409, { message: 'Duplicated entity' });
       } else {
         throw error;
       }

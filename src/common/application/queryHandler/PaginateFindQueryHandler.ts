@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { IQuery, IQueryHandler } from '@nestjs/cqrs';
+import { injectable } from 'inversify';
 
+import { QueryHandler } from './QueryHandler';
 import { PaginateFindAdapter } from '../../domain/adapter/PaginateFindAdapter';
 import { Pagination } from '../../domain/model/Pagination';
+import { Query } from '../model/Query';
 
-@Injectable()
-export class PaginateFindQueryHandler<TQuery extends IQuery, TModel>
-  implements IQueryHandler<TQuery, Pagination<TModel>>
+@injectable()
+export class PaginateFindQueryHandler<TQuery extends Query, TModel>
+  implements QueryHandler<TQuery, Pagination<TModel>>
 {
   public constructor(private readonly paginateFindAdapter: PaginateFindAdapter<TQuery, TModel>) {}
 

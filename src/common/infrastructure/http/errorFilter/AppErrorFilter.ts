@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
-// eslint-disable-next-line import/no-unresolved
-import { HTTPException } from 'hono/http-exception';
+
+import { HttpException } from '../exception/HttpException';
 
 export interface ErrorFilter {
   filter(err: Error, _c: Context): Response;
@@ -13,10 +13,11 @@ export class AppErrorFilter implements ErrorFilter {
     let message: string = 'Internal Server Error';
     let status: number = 500;
 
-    if (err instanceof HTTPException) {
+    if (err instanceof HttpException) {
       message = err.message;
       status = err.status;
     } else {
+      // eslint-disable-next-line no-console
       console.log(err);
     }
 

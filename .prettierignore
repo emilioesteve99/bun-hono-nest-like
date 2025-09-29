@@ -1,3 +1,2 @@
 src/common/infrastructure/mikroOrm/migrations/*
-.eslintrc.js
-mikro-orm.config.ts
+

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+// eslint-disable-next-line import/no-unresolved
 import { showRoutes } from 'hono/dev';
 
 import { commonProviders, di } from './common/infrastructure/di/di';
